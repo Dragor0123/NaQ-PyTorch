@@ -73,3 +73,4 @@
 - results/T06_precheck.json, results/T06A_novelty.{md,json}, results/T06_summary.md, results/T06_dose_response.png
 - results/expB/ JSON 16개: {unl_uni,nov}_r0.5 ×2 ds ×3 seed, naq_unl s2 ×2, elec {unl_uni,nov}_r0.2 s0
 - reports/T06_report.md
+커밋: 36a1e86 (branch cape-validation)
