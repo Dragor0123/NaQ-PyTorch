@@ -89,3 +89,4 @@
 - results/T05A_diag.md, results/T05A_diag.json, results/T05_summary.md
 - results/expB/{ds}_{naq_unl,lr_soft}_s{0,1}.json ×8, {ds}_{naq_hard,naq_easy}_s0.json ×4
 - reports/T05_report.md
+커밋: e04f26b (branch cape-validation)
