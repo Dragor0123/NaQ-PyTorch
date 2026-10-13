@@ -71,3 +71,4 @@
 - cape/generators.py, cape/train_proto.py, cape/run_expB.sh, cape/summarize.py
 - results/expB/{ds}_{arm}_s0.json ×12, results/expB/purity_vs_acc.png, results/summary.md
 - reports/T03_report.md, instructions/T03_expB_downstream.md (T03_preregistration.md는 73a8663에서 커밋)
+커밋: f300730 (branch cape-validation)
