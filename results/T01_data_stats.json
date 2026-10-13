@@ -1,0 +1,112 @@
+{
+ "Amazon_clothing": {
+  "N": 24919,
+  "E_undirected": 91680,
+  "d": 9034,
+  "x_nnz_per_row": 31.744331634495765,
+  "n_classes": 77,
+  "n_base": 40,
+  "n_valid": 17,
+  "n_test": 20,
+  "valid_per_file": {
+   "10way_1shot.pkl": 17,
+   "10way_5shot.pkl": 17,
+   "1way_1shot.pkl": 16,
+   "5way_1shot.pkl": 17,
+   "5way_5shot.pkl": 17
+  },
+  "all_labeled": true,
+  "labels_contiguous": true,
+  "min_class_size": 101,
+  "sum_p2": 0.02016700971776994,
+  "way_contamination": {
+   "5": 0.07826043213313172,
+   "10": 0.1675301377440538,
+   "20": 0.32096978861527936
+  },
+  "edge_homophily": 0.6759707678883071,
+  "avg_degree": 7.358240604400635,
+  "n_deg0": 0,
+  "n_self_loops": 0,
+  "ref_homophily": 0.676,
+  "ref_avg_degree": 7.36,
+  "naq_table7_homophily": 0.62,
+  "errors": [],
+  "passed": true,
+  "sec": 0.5281562805175781
+ },
+ "Amazon_eletronics": {
+  "N": 42318,
+  "E_undirected": 43556,
+  "d": 8669,
+  "x_nnz_per_row": 40.25743182570065,
+  "n_classes": 167,
+  "n_base": 90,
+  "n_valid": 37,
+  "n_test": 40,
+  "valid_per_file": {
+   "10way_1shot.pkl": 37,
+   "10way_5shot.pkl": 37,
+   "20way_1shot.pkl": 37,
+   "20way_5shot.pkl": 37,
+   "5way_1shot.pkl": 37,
+   "5way_5shot.pkl": 37
+  },
+  "all_labeled": true,
+  "labels_contiguous": true,
+  "min_class_size": 101,
+  "sum_p2": 0.008126060617366797,
+  "way_contamination": {
+   "5": 0.03211018729031556,
+   "10": 0.07080189090306965,
+   "20": 0.14360698894574075
+  },
+  "edge_homophily": 0.3727155845348517,
+  "avg_degree": 2.058509349822998,
+  "n_deg0": 0,
+  "n_self_loops": 0,
+  "ref_homophily": 0.373,
+  "ref_avg_degree": 2.06,
+  "naq_table7_homophily": 0.38,
+  "errors": [],
+  "passed": true,
+  "sec": 0.45342373847961426
+ },
+ "dblp": {
+  "N": 40672,
+  "E_undirected": 288270,
+  "d": 7202,
+  "x_nnz_per_row": 46.5732936664044,
+  "n_classes": 137,
+  "n_base": 80,
+  "n_valid": 27,
+  "n_test": 30,
+  "valid_per_file": {
+   "10way_1shot.pkl": 27,
+   "10way_5shot.pkl": 27,
+   "20way_1shot.pkl": 27,
+   "20way_5shot.pkl": 27,
+   "5way_1shot.pkl": 27,
+   "5way_5shot.pkl": 27
+  },
+  "all_labeled": true,
+  "labels_contiguous": true,
+  "min_class_size": 101,
+  "sum_p2": 0.010011234451614141,
+  "way_contamination": {
+   "5": 0.03944759236646489,
+   "10": 0.08657604705707456,
+   "20": 0.1740094887578526
+  },
+  "edge_homophily": 0.25804627606063757,
+  "avg_degree": 14.17535400390625,
+  "n_deg0": 0,
+  "n_self_loops": 0,
+  "ref_homophily": 0.258,
+  "ref_avg_degree": 14.18,
+  "naq_table7_homophily": 0.29,
+  "errors": [],
+  "passed": true,
+  "sec": 0.5132629871368408
+ }
+}

@@ -1,0 +1,70 @@
+{
+ "gpu": "NVIDIA GeForce RTX 4080 SUPER",
+ "torch": "2.4.1+cu121",
+ "Amazon_eletronics": {
+  "N": 42318,
+  "gcn": {
+   "step_ms": 26.52923583984375,
+   "fwd_ms": 18.51367950439453,
+   "peak_mem_GB": 1.2084574699401855,
+   "est_16k_train_min": 7.08680534362793,
+   "note": "excludes test LR probing time"
+  },
+  "blocks": {
+   "cos_raw": {
+    "block": 2048,
+    "block_s": 0.05303311347961426,
+    "n_blocks": 21,
+    "est_total_s": 1.1136953830718994,
+    "peak_mem_GB": 2.784550666809082
+   },
+   "ppr": {
+    "block": 2048,
+    "block_s": 0.6012816429138184,
+    "n_blocks": 21,
+    "est_total_s": 12.626914501190186,
+    "peak_mem_GB": 1.666184902191162
+   },
+   "x_sgc": {
+    "build_s": 0.41355323791503906,
+    "tensor_GB": 1.3666404113173485,
+    "peak_mem_GB": 5.520616054534912,
+    "peak_over_inputs_GB": 5.469430923461914
+   }
+  },
+  "total_s": 8.954145193099976
+ },
+ "dblp": {
+  "N": 40672,
+  "gcn": {
+   "step_ms": 30.559186935424805,
+   "fwd_ms": 21.42336368560791,
+   "peak_mem_GB": 1.1766157150268555,
+   "est_16k_train_min": 8.163398758570354,
+   "note": "excludes test LR probing time"
+  },
+  "blocks": {
+   "cos_raw": {
+    "block": 2048,
+    "block_s": 0.04522418975830078,
+    "n_blocks": 20,
+    "est_total_s": 0.9044837951660156,
+    "peak_mem_GB": 2.246394157409668
+   },
+   "ppr": {
+    "block": 2048,
+    "block_s": 0.6432771682739258,
+    "n_blocks": 20,
+    "est_total_s": 12.865543365478516,
+    "peak_mem_GB": 1.6192083358764648
+   },
+   "x_sgc": {
+    "build_s": 0.055680274963378906,
+    "tensor_GB": 1.0912110805511475,
+    "peak_mem_GB": 4.433646202087402,
+    "peak_over_inputs_GB": 4.369830131530762
+   }
+  },
+  "total_s": 3.835832357406616
+ }
+}
