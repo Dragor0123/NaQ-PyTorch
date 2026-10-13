@@ -1,0 +1,18 @@
+{
+ "Amazon_eletronics": {
+  "check1_bad_classes": [],
+  "check2_U_equals_novel_at_r1": true
+ },
+ "dblp": {
+  "check1_bad_classes": [],
+  "check2_U_equals_novel_at_r1": true
+ },
+ "check3_split_refs_in_generator_src": {
+  "make_unl_uni": [],
+  "make_nov": [],
+  "make_scarce_gen": [],
+  "make_topk_gen": [],
+  "top_in_pool": []
+ },
+ "passed": true
+}

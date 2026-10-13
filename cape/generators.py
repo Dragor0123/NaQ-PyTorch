@@ -94,8 +94,34 @@ def make_oracle(nbr, score, y, anchor_pool):
     return gen
 
 
+# --- T06: label-scarce anchoring. Inputs restricted to (pool-derived top10, L_idx, y_L, novelty); no split access.
+def make_unl_uni(top10, L_idx, y_L, novelty=None):
+    U = np.setdiff1d(np.arange(len(top10)), L_idx)
+    return make_topk_gen(top10, U)
+
+
+def make_nov(top10, L_idx, y_L, novelty):
+    U = np.setdiff1d(np.arange(len(top10)), L_idx)
+    k = int(np.ceil(len(U) / 2))                               # top 50% novelty within U (fixed)
+    A_nov = np.sort(U[np.argsort(-novelty[U], kind="stable")[:k]])
+    return make_topk_gen(top10, A_nov)
+
+
+def make_scarce_gen(arm, ds, nbr, cue):
+    from cape.labelmask import make_mask
+    from cape.novelty import load_novelty
+    r = float(arm.rsplit("_r", 1)[1])
+    L_idx, y_L = make_mask(ds, r)
+    top10 = top_in_pool(nbr, cue[:, :, NAQ_BEST_COL[ds]], N_QRY)
+    if arm.startswith("unl_uni_r"):
+        return make_unl_uni(top10, L_idx, y_L)
+    return make_nov(top10, L_idx, y_L, load_novelty(ds, r, L_idx, y_L)["sgc"])
+
+
 def make_gen(arm, inp):
     nbr, cue, s_lr, y = inp["nbr"], inp["cue"], inp["s_lr"], inp["y"]
+    if arm.startswith(("unl_uni_r", "nov_r")):
+        return make_scarce_gen(arm, inp["ds"], nbr, cue)
     if arm == "naq_feat":
         return make_topk_gen(top_in_pool(nbr, cue[:, :, 0], N_QRY))
     if arm == "naq_diff":
@@ -143,4 +169,5 @@ def episode_stats(spt, qry, y, split):
         "anchor_unique_frac": float(len(np.unique(spt)) / spt.size),
         "anchor_class_entropy": float(-(p * np.log(p)).sum() / np.log(C)),
         "anchor_group_frac": {gname: float(np.isin(ya, split[gname]).mean()) for gname in ("base", "valid", "test")},
+        "anchor_novel_frac": float(np.isin(ya, split["valid"] + split["test"]).mean()),
     }
