@@ -33,3 +33,4 @@
 변경·생성 파일:
 - .gitignore, cape/__init__.py, cape/data.py, cape/check_data.py, cape/smoke_gpu.py
 - results/T01_data_stats.json, results/T01_timing.json, reports/T01_report.md (+ CLAUDE.md, instructions/)
+커밋: dd35aa1 (branch cape-validation)
