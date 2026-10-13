@@ -1,0 +1,48 @@
+{
+ "block": 2048,
+ "pool_size": {
+  "mean": 113.57385916601102,
+  "median": 114.0,
+  "min": 64,
+  "max": 150
+ },
+ "top50_overlap": {
+  "raw_sgc": 0.15577596426010132,
+  "raw_ppr": 0.12172599881887436,
+  "sgc_ppr": 0.5555806756019592
+ },
+ "cue_names": [
+  "cos_raw",
+  "cos_sgc",
+  "log_ppr",
+  "adj",
+  "mknn_raw",
+  "neg_euclid_raw"
+ ],
+ "adj_frac": 0.11867941915988922,
+ "mknn_frac": 0.028997184708714485,
+ "checks": {
+  "check1_raw": {
+   "exact_match": 100,
+   "tie_only_diff": 0,
+   "real_mismatch": 0
+  },
+  "check1_sgc": {
+   "exact_match": 100,
+   "tie_only_diff": 0,
+   "real_mismatch": 0
+  },
+  "check2_ppr_overlap": 1.0,
+  "check3_sym_median_relerr": 0.0,
+  "check3_sym_median_relerr_pi_gt_1e-4": 0.0,
+  "check3_n_pairs": 1000,
+  "passed": true
+ },
+ "times": {
+  "features_s": 0.4384729862213135,
+  "blocks_s": 13.50298810005188,
+  "graph_cues_s": 1.8459115028381348,
+  "checks_s": 0.03592371940612793
+ },
+ "peak_gpu_GB": 4.695413112640381
+}
