@@ -134,7 +134,8 @@ def main():
                       "cape_lite_eligible": getattr(gen, "eligible", None)},
            "episode_stats": stats, "valid_curve": curve, "best_episode": best_ep, "best_valid": best_acc,
            "test": test, "time": T, "peak_gpu_GB": torch.cuda.max_memory_allocated() / 2**30}
-    out = args.out or f"results/expB/{ds}_{arm}_s{seed}.json"
+    suffix = "" if args.episodes == 4000 else f"_e{args.episodes}"
+    out = args.out or f"results/expB/{ds}_{arm}_s{seed}{suffix}.json"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     json.dump(res, open(out, "w"), indent=1)
     log(f"{ds}/{arm} DONE test={test} time={T}")
