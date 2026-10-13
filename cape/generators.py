@@ -10,6 +10,8 @@ from cape.data import load_graph, load_split
 
 N_WAY, N_QRY = 5, 10
 ARMS = ["naq_feat", "naq_diff", "lr_only", "cape_lite", "oracle", "oracle_base"]
+T05_ARMS = ["naq_unl", "lr_soft", "naq_hard", "naq_easy"]
+NAQ_BEST_COL = {"Amazon_eletronics": 0, "dblp": 2}  # NaQ-best ranker from T03 seed 0: raw / ppr
 SCORE_COL = {"raw": 0, "sgc": 1, "ppr": 2}
 
 
@@ -23,15 +25,15 @@ def load_inputs(ds):
     z = np.load(f"cache/{ds}/pool.npz")
     s = np.load(f"cache/{ds}/scores.npz")
     g = load_graph(ds)
-    return {"nbr": z["nbr"], "cue": z["cue"], "s_lr": s["s_lr"], "pi_hat": s["pi_hat"], "y": g["y"],
+    return {"ds": ds, "nbr": z["nbr"], "cue": z["cue"], "s_lr": s["s_lr"], "pi_hat": s["pi_hat"], "y": g["y"],
             "split": load_split(ds), "R_star": json.load(open(f"results/expA/{ds}.json"))["R_star"]}
 
 
-def make_topk_gen(top10):
+def make_topk_gen(top10, anchor_pool=None):
     N = len(top10)
 
     def gen(rng):
-        a = rng.choice(N, N_WAY, replace=False)
+        a = rng.choice(N, N_WAY, replace=False) if anchor_pool is None else rng.choice(anchor_pool, N_WAY, replace=False)
         return a, top10[a].reshape(-1)
     return gen
 
@@ -98,8 +100,13 @@ def make_gen(arm, inp):
         return make_topk_gen(top_in_pool(nbr, cue[:, :, 0], N_QRY))
     if arm == "naq_diff":
         return make_topk_gen(top_in_pool(nbr, cue[:, :, 2], N_QRY))
+    if arm in ("naq_best", "naq_unl"):  # T05; naq_unl uses labeled-node identity (T05 §0 exception)
+        top10 = top_in_pool(nbr, cue[:, :, NAQ_BEST_COL[inp["ds"]]], N_QRY)
+        if arm == "naq_best":
+            return make_topk_gen(top10)
+        return make_topk_gen(top10, np.nonzero(~np.isin(y, inp["split"]["base"]))[0])
     top10_lr = top_in_pool(nbr, s_lr, N_QRY)
-    if arm == "lr_only":
+    if arm in ("lr_only", "lr_soft"):
         return make_topk_gen(top10_lr)
     if arm == "cape_lite":
         return make_cape_lite(nbr, s_lr, inp["pi_hat"], top10_lr)

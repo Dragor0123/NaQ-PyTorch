@@ -46,6 +46,17 @@ def lr_task(Z, s, ys, q, yq):
     return LogisticRegression(max_iter=1000, C=1e4).fit(Z[s], ys).score(Z[q], yq)
 
 
+def soft_weights(nbr, s_lr, spt, qry):
+    """T05 lr_soft: w_q = s_lr(anchor, q) / mean over the episode's 50 queries."""
+    S = np.zeros(qry.shape, np.float32)
+    for i in range(len(spt)):
+        for w in range(N_WAY):
+            a, q = spt[i, w], qry[i, w * N_QRY:(w + 1) * N_QRY]
+            j = (nbr[a][None, :] == q[:, None]).argmax(1)
+            S[i, w * N_QRY:(w + 1) * N_QRY] = s_lr[a, j]
+    return S / S.mean(1, keepdims=True)
+
+
 def ci(a):
     return {"mean": float(a.mean() * 100), "ci95": float(1.96 * a.std() / np.sqrt(len(a)) * 100)}
 
@@ -59,6 +70,7 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--n_jobs", type=int, default=8)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--n_cand", type=int, default=4)  # T05 naq_hard / naq_easy candidates per step
     args = ap.parse_args()
     ds, arm, seed = args.dataset, args.arm, args.seed
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
@@ -66,14 +78,20 @@ def main():
 
     # episodes (generated up front)
     inp = load_inputs(ds)
-    gen = make_gen(arm, inp)
+    K = args.n_cand if arm in ("naq_hard", "naq_easy") else 1   # T05: K candidates per step, NaQ-best rule
+    gen = make_gen("naq_best" if K > 1 else arm, inp)
     rng = np.random.default_rng(seed)
     t = time.time()
-    eps = [gen(rng) for _ in range(args.episodes)]
+    eps = [gen(rng) for _ in range(args.episodes * K)]
     T["generate_s"] = time.time() - t
     spt = np.stack([e[0] for e in eps]); qry = np.stack([e[1] for e in eps])
-    stats = episode_stats(spt, qry, inp["y"], inp["split"])
-    log(f"{ds}/{arm} generated {args.episodes} eps in {T['generate_s']:.1f}s stats={stats}")
+    extra, W_t = {}, None
+    if arm == "lr_soft":
+        W = soft_weights(inp["nbr"], inp["s_lr"], spt, qry)
+        extra["w_stats"] = {"mean": float(W.mean()), "std": float(W.std()), "min": float(W.min()), "max": float(W.max())}
+        W_t = torch.from_numpy(W).to(DEV)
+    stats = episode_stats(spt, qry, inp["y"], inp["split"]) if K == 1 else None
+    log(f"{ds}/{arm} generated {len(eps)} eps in {T['generate_s']:.1f}s stats={stats} extra={extra}")
 
     g = load_graph(ds)
     X = to_torch_sparse(g["X"], DEV)
@@ -94,12 +112,23 @@ def main():
     curve = [(0, valid_acc())]
     best_ep, best_acc, best_state = 0, curve[0][1], copy.deepcopy({k: v.cpu() for k, v in model.state_dict().items()})
     t = time.time(); t_eval = 0.0
+    sel, sel_loss, cand_loss = [], [], []
     model.train()
     for ep in range(1, args.episodes + 1):
         opt.zero_grad()
         H = model(X, Ah)
-        P, Q = H[spt_t[ep - 1]], H[qry_t[ep - 1]]
-        loss = nn.functional.cross_entropy(-torch.cdist(Q, P) ** 2, yq_t)
+        if K == 1:
+            P, Q = H[spt_t[ep - 1]], H[qry_t[ep - 1]]
+            if W_t is None:
+                loss = nn.functional.cross_entropy(-torch.cdist(Q, P) ** 2, yq_t)
+            else:
+                loss = (nn.functional.cross_entropy(-torch.cdist(Q, P) ** 2, yq_t, reduction="none") * W_t[ep - 1]).mean()
+        else:
+            idx = list(range((ep - 1) * K, ep * K))
+            losses = torch.stack([nn.functional.cross_entropy(-torch.cdist(H[qry_t[i]], H[spt_t[i]]) ** 2, yq_t) for i in idx])
+            j = int(losses.argmax() if arm == "naq_hard" else losses.argmin())
+            loss = losses[j]
+            sel.append(idx[j]); sel_loss.append(loss.item()); cand_loss.append(losses.mean().item())
         if not torch.isfinite(loss):
             raise SystemExit(f"NaN/inf loss at episode {ep}")
         loss.backward(); opt.step()
@@ -115,6 +144,12 @@ def main():
     torch.cuda.synchronize()
     T["train_s"] = time.time() - t; T["valid_eval_s"] = t_eval
     T["step_ms"] = (T["train_s"] - t_eval) / args.episodes * 1000
+    if K > 1:  # stats on episodes actually used for training
+        stats = episode_stats(spt[sel], qry[sel], inp["y"], inp["split"])
+        extra["hard_easy"] = {"n_cand": K, "selected_loss_mean": float(np.mean(sel_loss)),
+                              "candidate_loss_mean": float(np.mean(cand_loss)),
+                              "selected_query_purity": stats["query_purity"],
+                              "all_candidates_query_purity": episode_stats(spt, qry, inp["y"], inp["split"])["query_purity"]}
 
     # test with best checkpoint
     t = time.time()
@@ -132,7 +167,7 @@ def main():
     T["total_s"] = time.time() - t0
     res = {"config": {**vars(args), "R_star": inp["R_star"], "gcn": "d-512-256 relu xavier", "lr": 1e-4,
                       "cape_lite_eligible": getattr(gen, "eligible", None)},
-           "episode_stats": stats, "valid_curve": curve, "best_episode": best_ep, "best_valid": best_acc,
+           "episode_stats": stats, **extra, "valid_curve": curve, "best_episode": best_ep, "best_valid": best_acc,
            "test": test, "time": T, "peak_gpu_GB": torch.cuda.max_memory_allocated() / 2**30}
     suffix = "" if args.episodes == 4000 else f"_e{args.episodes}"
     out = args.out or f"results/expB/{ds}_{arm}_s{seed}{suffix}.json"
