@@ -93,3 +93,4 @@
 - results/T08A_calibration.{md,json}, results/T08A_{ds}.json ×3, results/T08_source_check.json, results/T08_summary.md
 - results/expB/ JSON 18개
 - reports/T08_report.md
+커밋: 75861f1 (branch cape-validation)
