@@ -123,13 +123,17 @@ def make_nov2(top10, L_idx, y_L, weights):
 
 
 def make_mix_alt(top10, L_idx, y_L, weights, sup_frac=0.3):
-    nov = make_nov2(top10, L_idx, y_L, weights)
+    return make_mix(make_nov2(top10, L_idx, y_L, weights), L_idx, y_L, sup_frac)
+
+
+def make_mix(other, L_idx, y_L, sup_frac):
+    """Per episode: with prob sup_frac a 5-way 1-shot supervised episode from L (1+10 per class), else other(rng)."""
     by_c = {int(c): L_idx[y_L == c] for c in np.unique(y_L)}
     cls = np.array([c for c, v in by_c.items() if len(v) >= 1 + N_QRY])
 
     def gen(rng):
         if rng.random() >= sup_frac:
-            return nov(rng)
+            return other(rng)
         cs = rng.choice(cls, N_WAY, replace=False)
         picks = [rng.choice(by_c[int(c)], 1 + N_QRY, replace=False) for c in cs]
         return np.array([p[0] for p in picks]), np.concatenate([p[1:] for p in picks])
@@ -143,12 +147,20 @@ def make_scarce_gen(arm, ds, nbr, cue):
     r = float(arm.rsplit("_r", 1)[1])
     L_idx, y_L = make_mask(ds, r)
     top10 = top_in_pool(nbr, cue[:, :, NAQ_BEST_COL[ds]], N_QRY)
-    if arm.startswith(("nov2_", "mix_alt_r")):
+    if arm.startswith(("naq_mix_r", "sup_only_r")):   # T08 controls
+        return make_mix(make_topk_gen(top10), L_idx, y_L, 0.3 if arm.startswith("naq_mix") else 1.0)
+    if arm.startswith("nov2c_"):                      # T08: calibrated p from E2*
+        from cape.novelty2 import compute_estimators3
+        E2 = json.load(open("results/T08A_calibration.json"))["E2_star"]
+        return make_nov2(top10, L_idx, y_L, np.clip(compute_estimators3(ds, r)[E2], 0, None) ** int(arm.split("_")[1][1:]))
+    if arm.startswith(("nov2_", "mix_alt_r", "mix_alt_p")):
         from cape.novelty2 import compute_estimators
         E = json.load(open("results/T07A_estimators.json"))["E_star"]
         p_nov = compute_estimators(ds, r)[E]
         if arm.startswith("mix_alt_r"):
             return make_mix_alt(top10, L_idx, y_L, p_nov)
+        if arm.startswith("mix_alt_p"):              # T08: mix_alt_p10 / p50
+            return make_mix_alt(top10, L_idx, y_L, p_nov, int(arm.split("_")[2][1:]) / 100)
         tau = int(arm.split("_")[1][1:])
         return make_nov2(top10, L_idx, y_L, np.clip(p_nov, 0, None) ** tau)
     if arm.startswith("unl_uni_r"):
@@ -158,7 +170,7 @@ def make_scarce_gen(arm, ds, nbr, cue):
 
 def make_gen(arm, inp):
     nbr, cue, s_lr, y = inp["nbr"], inp["cue"], inp["s_lr"], inp["y"]
-    if arm.startswith(("unl_uni_r", "nov_r", "nov2_", "mix_alt_r")):
+    if arm.startswith(("unl_uni_r", "nov_r", "nov2_", "mix_alt_r", "mix_alt_p", "naq_mix_r", "sup_only_r", "nov2c_")):
         return make_scarce_gen(arm, inp["ds"], nbr, cue)
     if arm == "naq_feat":
         return make_topk_gen(top_in_pool(nbr, cue[:, :, 0], N_QRY))

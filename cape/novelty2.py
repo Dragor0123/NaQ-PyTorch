@@ -83,3 +83,54 @@ def compute_estimators(ds, r):
     np.savez(path, **out, known_struct=ks.astype(np.float32),
              pu_c=np.array([cs[k] for k in ("pu_feat", "pu_struct", "pu_both")], np.float32))
     return {**out, "known_struct": ks}
+
+
+# --- T08: calibrated PU variants (no class_weight, PCA-256 of Xs fit unsupervised on all nodes)
+ESTIMATORS3 = ["pu_feat2", "pu_both2", "pu_struct"]
+
+
+def pu_novelty2(F, L_idx, seed=0):
+    """Elkan-Noto as pu_novelty, but LogisticRegression(C=1.0, max_iter=2000) without class_weight."""
+    s = np.zeros(len(F), np.int64); s[L_idx] = 1
+    mk = lambda: LogisticRegression(C=1.0, max_iter=2000)
+    g = mk().fit(F, s).predict_proba(F)[:, 1]
+    oof = np.zeros(len(F))
+    for tr, te in StratifiedKFold(5, shuffle=True, random_state=seed).split(F, s):
+        oof[te] = mk().fit(F[tr], s[tr]).predict_proba(F[te])[:, 1]
+    c = float(oof[L_idx].mean())
+    return 1 - np.minimum(1.0, g / c), c
+
+
+def compute_estimators3(ds, r, skip_both=False):
+    from sklearn.decomposition import PCA
+    path = f"cache/{ds}/novelty3_r{r}.npz"
+    if os.path.exists(path):
+        z = np.load(path)
+        return {k: z[k] for k in z.files}
+    L_idx, y_L = make_mask(ds, r)
+    g = load_graph(ds)                       # uses A and X only
+    A = g["A"]
+    Ah = adj_hat_torch(A, DEV)
+    Xs = sgc_features(Ah, to_torch_sparse(g["X"], DEV)).cpu().numpy()
+    torch.cuda.empty_cache()
+    T, out, cs = {}, {}, {}
+    t = time.time()
+    Z = PCA(n_components=256, svd_solver="randomized", random_state=0).fit_transform(Xs)
+    del Xs
+    T["pca_s"] = time.time() - t
+    ks = known_struct(Ah, L_idx)
+    ld = np.log1p(np.asarray(A.sum(1)).reshape(-1))
+    t = time.time()
+    out["pu_feat2"], cs["pu_feat2"] = pu_novelty2(Z, L_idx)
+    T["pu_feat2_s"] = time.time() - t
+    if not skip_both:
+        t = time.time()
+        out["pu_both2"], cs["pu_both2"] = pu_novelty2(StandardScaler().fit_transform(np.concatenate([Z, ks[:, None], ld[:, None]], 1)), L_idx)
+        T["pu_both2_s"] = time.time() - t
+    t = time.time()
+    out["pu_struct"], cs["pu_struct"] = pu_novelty(StandardScaler().fit_transform(np.stack([ks, ld], 1)), L_idx)
+    T["pu_struct_s"] = time.time() - t
+    log(f"{ds} r={r} estimators3 times {T} c={cs}")
+    out = {k: v.astype(np.float32) for k, v in out.items()}
+    np.savez(path, **out, **{f"time_{k}": np.float32(v) for k, v in T.items()}, **{f"c_{k}": np.float32(v) for k, v in cs.items()})
+    return compute_estimators3(ds, r)

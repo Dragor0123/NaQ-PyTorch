@@ -1,0 +1,20 @@
+{
+ "function_hits": {
+  "cape.novelty2.pu_novelty2": [],
+  "cape.novelty2.compute_estimators3": [],
+  "cape.novelty2.known_struct": [],
+  "cape.novelty2.pu_novelty": [],
+  "cape.novelty.novelty_scores": [],
+  "cape.generators.make_mix": [],
+  "cape.generators.make_mix_alt": [],
+  "cape.generators.make_nov2": [],
+  "cape.generators.make_scarce_gen": [],
+  "cape.generators.make_topk_gen": [],
+  "cape.generators.top_in_pool": []
+ },
+ "module_imports_load_split": {
+  "cape.novelty": [],
+  "cape.novelty2": []
+ },
+ "passed": true
+}
