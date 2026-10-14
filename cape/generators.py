@@ -11,7 +11,7 @@ from cape.data import load_graph, load_split
 N_WAY, N_QRY = 5, 10
 ARMS = ["naq_feat", "naq_diff", "lr_only", "cape_lite", "oracle", "oracle_base"]
 T05_ARMS = ["naq_unl", "lr_soft", "naq_hard", "naq_easy"]
-NAQ_BEST_COL = {"Amazon_eletronics": 0, "dblp": 2}  # NaQ-best ranker from T03 seed 0: raw / ppr
+NAQ_BEST_COL = {"Amazon_clothing": 0, "Amazon_eletronics": 0, "dblp": 2}  # NaQ-best ranker from T03 seed 0: raw / ppr
 SCORE_COL = {"raw": 0, "sgc": 1, "ppr": 2}
 
 
@@ -107,12 +107,50 @@ def make_nov(top10, L_idx, y_L, novelty):
     return make_topk_gen(top10, A_nov)
 
 
+# --- T07: proportional anchoring with p_E*(novel|u)^tau, and mixing with supervised episodes from L.
+def make_nov2(top10, L_idx, y_L, weights):
+    U = np.setdiff1d(np.arange(len(top10)), L_idx)
+    w = np.clip(weights[U].astype(np.float64), 0, None)
+    if w.sum() <= 0:
+        raise RuntimeError("nov2: total anchor weight over U is 0")
+    U, w = U[w > 0], w[w > 0]
+    p = w / w.sum()
+
+    def gen(rng):
+        a = rng.choice(U, N_WAY, replace=False, p=p)
+        return a, top10[a].reshape(-1)
+    return gen
+
+
+def make_mix_alt(top10, L_idx, y_L, weights, sup_frac=0.3):
+    nov = make_nov2(top10, L_idx, y_L, weights)
+    by_c = {int(c): L_idx[y_L == c] for c in np.unique(y_L)}
+    cls = np.array([c for c, v in by_c.items() if len(v) >= 1 + N_QRY])
+
+    def gen(rng):
+        if rng.random() >= sup_frac:
+            return nov(rng)
+        cs = rng.choice(cls, N_WAY, replace=False)
+        picks = [rng.choice(by_c[int(c)], 1 + N_QRY, replace=False) for c in cs]
+        return np.array([p[0] for p in picks]), np.concatenate([p[1:] for p in picks])
+    return gen
+
+
 def make_scarce_gen(arm, ds, nbr, cue):
+    import json
     from cape.labelmask import make_mask
     from cape.novelty import load_novelty
     r = float(arm.rsplit("_r", 1)[1])
     L_idx, y_L = make_mask(ds, r)
     top10 = top_in_pool(nbr, cue[:, :, NAQ_BEST_COL[ds]], N_QRY)
+    if arm.startswith(("nov2_", "mix_alt_r")):
+        from cape.novelty2 import compute_estimators
+        E = json.load(open("results/T07A_estimators.json"))["E_star"]
+        p_nov = compute_estimators(ds, r)[E]
+        if arm.startswith("mix_alt_r"):
+            return make_mix_alt(top10, L_idx, y_L, p_nov)
+        tau = int(arm.split("_")[1][1:])
+        return make_nov2(top10, L_idx, y_L, np.clip(p_nov, 0, None) ** tau)
     if arm.startswith("unl_uni_r"):
         return make_unl_uni(top10, L_idx, y_L)
     return make_nov(top10, L_idx, y_L, load_novelty(ds, r, L_idx, y_L)["sgc"])
@@ -120,7 +158,7 @@ def make_scarce_gen(arm, ds, nbr, cue):
 
 def make_gen(arm, inp):
     nbr, cue, s_lr, y = inp["nbr"], inp["cue"], inp["s_lr"], inp["y"]
-    if arm.startswith(("unl_uni_r", "nov_r")):
+    if arm.startswith(("unl_uni_r", "nov_r", "nov2_", "mix_alt_r")):
         return make_scarce_gen(arm, inp["ds"], nbr, cue)
     if arm == "naq_feat":
         return make_topk_gen(top_in_pool(nbr, cue[:, :, 0], N_QRY))

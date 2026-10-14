@@ -70,7 +70,9 @@ def main():
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--n_jobs", type=int, default=8)
     ap.add_argument("--out", default=None)
-    ap.add_argument("--n_cand", type=int, default=4)  # T05 naq_hard / naq_easy candidates per step
+    ap.add_argument("--n_cand", type=int, default=4)
+    ap.add_argument("--save_emb", action="store_true")  # T07: best-checkpoint embeddings -> cache/emb (float16)
+    ap.add_argument("--tag", default="")                 # T07: extra suffix for json / emb file names  # T05 naq_hard / naq_easy candidates per step
     args = ap.parse_args()
     ds, arm, seed = args.dataset, args.arm, args.seed
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
@@ -169,7 +171,10 @@ def main():
                       "cape_lite_eligible": getattr(gen, "eligible", None)},
            "episode_stats": stats, **extra, "valid_curve": curve, "best_episode": best_ep, "best_valid": best_acc,
            "test": test, "time": T, "peak_gpu_GB": torch.cuda.max_memory_allocated() / 2**30}
-    suffix = "" if args.episodes == 4000 else f"_e{args.episodes}"
+    suffix = ("" if args.episodes == 4000 else f"_e{args.episodes}") + args.tag
+    if args.save_emb:
+        os.makedirs("cache/emb", exist_ok=True)
+        np.save(f"cache/emb/{ds}_{arm}_s{seed}{suffix}.npy", Z.astype(np.float16))
     out = args.out or f"results/expB/{ds}_{arm}_s{seed}{suffix}.json"
     os.makedirs(os.path.dirname(out), exist_ok=True)
     json.dump(res, open(out, "w"), indent=1)

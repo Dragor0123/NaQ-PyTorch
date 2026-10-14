@@ -1,0 +1,19 @@
+{
+ "function_hits": {
+  "novelty2.known_struct": [],
+  "novelty2.pu_novelty": [],
+  "novelty2.compute_estimators": [],
+  "novelty.novelty_scores": [],
+  "novelty.load_novelty": [],
+  "generators.make_nov2": [],
+  "generators.make_mix_alt": [],
+  "generators.make_scarce_gen": [],
+  "generators.make_topk_gen": [],
+  "generators.top_in_pool": []
+ },
+ "module_imports_load_split": {
+  "novelty2": [],
+  "novelty": []
+ },
+ "passed": true
+}
