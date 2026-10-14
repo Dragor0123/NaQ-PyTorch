@@ -107,3 +107,4 @@
 - results/T07_summary.md, results/T07_dose_response.png, results/T07_auroc_vs_gain.png
 - results/expB/ JSON 19개
 - reports/T07_report.md
+커밋: b7bfc87 (branch cape-validation)
