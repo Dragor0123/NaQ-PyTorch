@@ -1,0 +1,23 @@
+{
+ "gb1_max_abs_diff": 9.5367431640625e-07,
+ "gb2_max_abs_diff": 9.5367431640625e-07,
+ "gb3_max_abs_diff": 0.0,
+ "gb3_finite": true,
+ "gb4_naq": 1.5710161924362183,
+ "gb4_tp": 1.5710164308547974,
+ "gb4_abs_diff": 2.384185791015625e-07,
+ "gb4_first_anchors": [
+  26953,
+  21629,
+  11416,
+  13026,
+  35993
+ ],
+ "pass": {
+  "gb1": true,
+  "gb2": true,
+  "gb3": true,
+  "gb4": true
+ },
+ "all_pass": true
+}

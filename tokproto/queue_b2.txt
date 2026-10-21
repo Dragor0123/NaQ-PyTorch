@@ -1,0 +1,12 @@
+Amazon_eletronics a2 sgc 0 8 1
+Amazon_eletronics a2 pprrow 0.5 8 1
+dblp a2 sgc 0 8 1
+dblp a2 pprrow 0.5 8 1
+Amazon_clothing a2 sgc 0 8 1
+Amazon_clothing a2 pprrow 0.5 8 1
+Amazon_eletronics a2 sgc 0 8 2
+Amazon_eletronics a2 pprrow 0.5 8 2
+dblp a2 sgc 0 8 2
+dblp a2 pprrow 0.5 8 2
+Amazon_clothing a2 sgc 0 8 2
+Amazon_clothing a2 pprrow 0.5 8 2
