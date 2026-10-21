@@ -59,4 +59,4 @@ oracle_filter 호출 경로 (`grep -rn oracle_filter tokproto/`):
 - 생성: `tokproto/{test_tp02.py, diag_oracle.py, summarize_tp02.py, run_TP02.sh, queue_tp02.txt}`
 - `results/tp/`: 새 run JSON 24개, `TP02_regression.json`
 - `results/TP02A_oracle_tokens.{json,md}`, `results/TP02_summary.{json,md}`, `reports/TP02_report.md`
-커밋: (후속 커밋에서 기입) (branch token_proto)
+커밋: 6b0df01 (branch token_proto)
