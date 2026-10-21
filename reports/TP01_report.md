@@ -65,4 +65,4 @@
 - results/: `TP01A_diag.{json,md}`, `TP01_summary.{json,md}`
 - cache/{ds}/pprrow_top50.npz 3개 (gitignore), logs/TP01_* (gitignore)
 - reports/TP01_report.md
-커밋: (아래 커밋 해시는 메시지로 보고) (branch token_proto)
+커밋: f1a5f7d (branch token_proto)
