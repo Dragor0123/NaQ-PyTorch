@@ -22,6 +22,17 @@
 
 **바뀌는 것은 학습 손실 하나다.** 에피소드(앵커·query), 인코더, 최적화, 평가는 NaQ-Feat 기준선과 같다.
 
+### 1.1 현재 단계 (TP02부터)
+- TP01에서 확인된 사실 (`reports/TP01_report.md`, `results/TP01_summary.md`)
+  - TP 학습기는 λ = 0에서 NaQ-Feat 기준선과 같다 (Gb, G0 통과).
+  - seed 0 격자에서 `tp_l0` 대비 1s LR 차이는 −1.23 ~ +0.48%p였다. valid로 고른 `tp_a2_pprrow_l50_m8`은 3 seed에서 clothing −1.06, eletronics −0.70, dblp +0.21이었다.
+  - attention은 거의 균등했다 (정규화 엔트로피 0.95–0.98, 같은 레이블 토큰 질량 ≈ 균등 기대값).
+  - sgc 토큰 순도는 clothing·eletronics에서 NaQ query 순도보다 낮고, dblp에서만 높았다. 일관된 양의 차이는 dblp에서만 보였다.
+- TP02의 질문
+  - seed 0에서 세 데이터셋 모두 양수였던 `tp_a2_sgc_l25_m8`의 이득이 seed 3개에서도 남는가.
+  - 토큰이 레이블상 순수하면(분석용 상한) 이득이 생기는가. 즉 토큰 순도가 병목인가.
+  - query별 attention이 균등 평균보다 나은가. attention을 날카롭게 하면 달라지는가.
+
 ## 2. 작업 방식
 
 1. 사용자는 매 턴 `instructions/TP{nn}_*.md` 하나를 지정해 작업을 지시한다.
@@ -204,7 +215,8 @@ NaQ-PyTorch/
 
 | 항목 | 규칙 | 다음 번호 |
 |---|---|---|
-| 지시서 | `instructions/TP{nn}_*.md` | TP01 |
-| 사전 등록 | TPP### (지시서 안의 표) | TPP001 |
+| 지시서 | `instructions/TP{nn}_*.md` (TP01 완료, TP02 진행) | TP03 |
+| 사전 등록 | TPP### (지시서 안의 표). TP01: TPP001–010, TP02: TPP011–016 | TPP017 |
 | 결과 | `results/tp/{ds}_{arm}_s{seed}.json` | — |
 | 캐시 | `cache/{ds}/pprrow_top50.npz` (TP01에서 생성) | — |
+| arm 접미사 (TP02) | `_t{100τ_att}` (τ_att ≠ 0.1일 때, 예 `_t02`), `_mean` (균등 α), tok `sgcora` (레이블 필터 토큰, 분석용 †) | — |
