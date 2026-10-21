@@ -15,13 +15,18 @@ from cape.generators import N_QRY, N_WAY, episode_stats, make_topk_gen, top_in_p
 from cape.pool import log
 from cape.train_proto import GCN, ci, lr_task, proto_acc
 from tokproto.loss import attn_diag, naq_loss, tp_loss
-from tokproto.tokens import load_candidates, token_sets, token_stats
+from tokproto.tokens import load_candidates, oracle_filter, token_sets, token_stats
 
 DEV = "cuda"
 
 
-def arm_name(neg, tok, lam, m):
-    return "tp_l0" if lam == 0 else f"tp_{neg}_{tok}_l{round(100 * lam)}_m{m}"
+def arm_name(neg, tok, lam, m, tau=0.1, attn="softmax"):
+    if lam == 0:
+        return "tp_l0"
+    a = f"tp_{neg}_{tok}_l{round(100 * lam)}_m{m}"
+    if attn == "mean":
+        return a + "_mean"
+    return a if tau == 0.1 else a + f"_t{round(100 * tau):02d}"
 
 
 def make_episodes(nbr, cue, seed, n):
@@ -35,10 +40,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dataset", required=True)
     ap.add_argument("--neg", choices=["a2", "b"], default="a2")
-    ap.add_argument("--tok", choices=["sgc", "pprrow"], default="sgc")
+    ap.add_argument("--tok", choices=["sgc", "pprrow", "sgcora"], default="sgc")
     ap.add_argument("--lam", type=float, default=0.0)
     ap.add_argument("--m", type=int, default=8)
     ap.add_argument("--tau_att", type=float, default=0.1)
+    ap.add_argument("--attn", choices=["softmax", "mean"], default="softmax")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--episodes", type=int, default=4000)
     ap.add_argument("--eval_every", type=int, default=250)
@@ -46,7 +52,8 @@ def main():
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
     ds, seed, lam = args.dataset, args.seed, args.lam
-    arm = arm_name(args.neg, args.tok, lam, args.m)
+    arm = arm_name(args.neg, args.tok, lam, args.m, args.tau_att, args.attn)
+    analysis_only = args.tok == "sgcora"
     random.seed(seed); np.random.seed(seed); torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
     T, t0 = {}, time.time()
 
@@ -61,9 +68,13 @@ def main():
     y = g["y"]
     stats = episode_stats(spt, qry, y, load_split(ds))   # analysis only
     extra = {}
-    if lam > 0:  # tokens: deterministic, no rng, no labels
+    if lam > 0:  # tokens: deterministic, no rng
         t = time.time()
-        tok, mask = token_sets(load_candidates(ds, args.tok, nbr, cue), spt, qry, args.m)
+        if args.tok == "sgcora":   # TP02 §0 exception: label-filtered tokens (analysis-only upper bound)
+            cand = oracle_filter(load_candidates(ds, "sgc", nbr, cue), ds)
+        else:                      # no rng, no labels
+            cand = load_candidates(ds, args.tok, nbr, cue)
+        tok, mask = token_sets(cand, spt, qry, args.m)
         T["tokens_s"] = time.time() - t
         extra["token_stats"] = token_stats(tok, mask, spt, y)   # analysis only
         tok_t = torch.from_numpy(tok).to(DEV); mask_t = torch.from_numpy(mask).to(DEV)
@@ -95,7 +106,7 @@ def main():
         if lam == 0:
             loss = naq_loss(Q, P, yq_t)
         else:
-            loss = tp_loss(Q, P, H[tok_t[ep - 1]], mask_t[ep - 1], lam, args.tau_att, args.neg, yq_t)
+            loss = tp_loss(Q, P, H[tok_t[ep - 1]], mask_t[ep - 1], lam, args.tau_att, args.neg, yq_t, args.attn)
         if not torch.isfinite(loss):
             raise SystemExit(f"NaN/inf loss at episode {ep}")
         loss.backward(); opt.step()
@@ -131,14 +142,14 @@ def main():
         acc = {}
         for e in range(min(200, args.episodes)):
             d = attn_diag(H[qry_t[e]], H[tok_t[e]], mask_t[e], args.tau_att, yq_t,
-                          y_t[tok_t[e]], y_t[spt_t[e]], y_t[qry_t[e]])
+                          y_t[tok_t[e]], y_t[spt_t[e]], y_t[qry_t[e]], args.attn)
             for k, v in d.items():
                 acc.setdefault(k, []).extend(v)
         extra["attn_diag"] = {k: float(np.mean(v)) if v else None for k, v in acc.items()}
         extra["attn_diag"]["n_queries"] = len(acc["mass_anchor_label"])
     T["total_s"] = time.time() - t0
     res = {"config": {**vars(args), "arm": arm, "gcn": "d-512-256 relu xavier", "lr": 1e-4},
-           "episode_stats": stats, **extra, "valid_curve": curve, "best_episode": best_ep, "best_valid": best_acc,
+           "attn": args.attn, "analysis_only": analysis_only, "episode_stats": stats, **extra, "valid_curve": curve, "best_episode": best_ep, "best_valid": best_acc,
            "test": test, "time": T, "peak_gpu_GB": torch.cuda.max_memory_allocated() / 2**30}
     out = args.out or f"results/tp/{ds}_{arm}_s{seed}.json"
     os.makedirs(os.path.dirname(out), exist_ok=True)

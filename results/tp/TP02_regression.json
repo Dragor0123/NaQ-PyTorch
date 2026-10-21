@@ -1,0 +1,24 @@
+{
+ "Amazon_clothing": {
+  "tokens_equal": true,
+  "loss_new": 1.4673011302947998,
+  "loss_tp01": 1.4673011302947998,
+  "abs_diff": 0.0,
+  "mean_vs_softmax_identical_tokens": 0.0
+ },
+ "Amazon_eletronics": {
+  "tokens_equal": true,
+  "loss_new": 1.3691843748092651,
+  "loss_tp01": 1.3691843748092651,
+  "abs_diff": 0.0,
+  "mean_vs_softmax_identical_tokens": 0.0
+ },
+ "dblp": {
+  "tokens_equal": true,
+  "loss_new": 1.5280656814575195,
+  "loss_tp01": 1.5280656814575195,
+  "abs_diff": 0.0,
+  "mean_vs_softmax_identical_tokens": 0.0
+ },
+ "pass": true
+}

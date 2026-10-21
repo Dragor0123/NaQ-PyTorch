@@ -20,6 +20,14 @@ def load_candidates(ds, tok, nbr=None, cue=None):
     raise ValueError(tok)
 
 
+def oracle_filter(cand, ds):
+    """TP02 sgcora only (analysis-only upper bound, labels read HERE only): keep candidates whose true label
+    equals the anchor's (row) label, else -1. Order is preserved."""
+    from cape.data import load_graph
+    y = load_graph(ds)["y"]
+    return np.where((cand >= 0) & (y[np.maximum(cand, 0)] == y[:, None]), cand, -1)
+
+
 def token_sets(cand, spt, qry, m):
     """cand [N,50]; spt [E,5]; qry [E,50] -> tok [E,5,m] (0 where masked), mask [E,5,m].
     Excludes the episode's 50 queries and its 5 anchors; keeps the first m remaining candidates."""
@@ -40,4 +48,7 @@ def token_stats(tok, mask, spt, y):
     n = mask.sum(2)
     ya = y[spt][:, :, None]
     return {"shortfall_rate": float((n < mask.shape[2]).mean()), "empty_rate": float((n == 0).mean()),
-            "mean_tokens": float(n.mean()), "token_purity": float((y[tok] == ya)[mask].mean())}
+            "mean_tokens": float(n.mean()), "token_purity": float((y[tok] == ya)[mask].mean()),
+            "count_dist": {"0": float((n == 0).mean()), "1-3": float(((n >= 1) & (n <= 3)).mean()),
+                           f"4-{mask.shape[2] - 1}": float(((n >= 4) & (n < mask.shape[2])).mean()),
+                           str(mask.shape[2]): float((n == mask.shape[2]).mean())}}
