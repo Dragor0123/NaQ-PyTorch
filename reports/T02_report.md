@@ -57,4 +57,4 @@
 - cape/graph_ops.py, cape/pool.py, cape/scorer.py, cape/expA.py
 - results/expA/{ds}.json, {ds}_scorer.json, {ds}_pool.json (각 3개), results/expA/summary.md
 - reports/T02_report.md, CLAUDE.md (사용자 수정분), instructions/T02_pool_scorer_expA.md
-커밋: f32b9f7 (branch cape-validation)
+커밋: 5b318f6 (branch cape-validation)

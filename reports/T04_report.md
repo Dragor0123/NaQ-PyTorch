@@ -65,4 +65,4 @@
 - results/expB/{ds}_{arm}_s{1,2}.json ×12, results/expB/Amazon_eletronics_{naq_feat,cape_lite}_s0_e8000.json
 - results/T04_summary.md, results/T04_valid_curves.png
 - reports/T04_report.md, instructions/T04_confirm_seeds.md
-커밋: f5d0854 (branch cape-validation)
+커밋: 78892e4 (branch cape-validation)

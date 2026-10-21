@@ -2,7 +2,7 @@
 소요 시간: 약 31분 (12:18:48 시작, 12:49 경 종료; 구현 약 1분 / A 1초 미만 / 스모크 약 1분 / B 26.5분 / 집계·보고 약 2분)
 - 실행 시각은 `date` 기준이다. 구현 시간이 짧게 찍힌 것은 시스템 시계 기준 그대로 적은 것이다.
 수행 내용:
-- 지시서를 수정 없이 먼저 커밋했다 (b40fb4e "T05: instruction and preregistration").
+- 지시서를 수정 없이 먼저 커밋했다 (192646b "T05: instruction and preregistration").
 - 새 파일: cape/diag_pihat.py, cape/run_T05.sh, cape/summarize_t05.py
 - generators.py 확장
   - `naq_best` (내부용): NaQ-best ranker. eletronics = raw, dblp = ppr
@@ -89,4 +89,4 @@
 - results/T05A_diag.md, results/T05A_diag.json, results/T05_summary.md
 - results/expB/{ds}_{naq_unl,lr_soft}_s{0,1}.json ×8, {ds}_{naq_hard,naq_easy}_s0.json ×4
 - reports/T05_report.md
-커밋: e04f26b (branch cape-validation)
+커밋: a5599ce (branch cape-validation)

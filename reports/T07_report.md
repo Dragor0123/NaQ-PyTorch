@@ -1,7 +1,7 @@
 [T07 보고] 상태: PARTIAL (P1–P3 완료, P4·P5·P6은 시간 규칙에 따라 제외. G7·S1–S10은 계산값만 적었다)
 소요 시간: 약 69분 (23:28:27 시작 – 00:37:35 종료; 구현 약 2분 + A 25분(구현과 병행) / B 41분 / 집계·보고 약 2분)
 수행 내용:
-- 지시서 두 개를 수정 없이 먼저 커밋했다 (8a20135).
+- 지시서 두 개를 수정 없이 먼저 커밋했다 (cb13ea6).
 - 새 파일: cape/novelty2.py, cape/diag_novelty2.py, cape/run_T07.sh, cape/summarize_t07.py
 - generators.py 확장: make_nov2(가중 비복원 추출), make_mix_alt, NAQ_BEST_COL에 clothing(raw) 추가
 - train_proto.py 확장: --save_emb, --tag 옵션
@@ -107,4 +107,4 @@
 - results/T07_summary.md, results/T07_dose_response.png, results/T07_auroc_vs_gain.png
 - results/expB/ JSON 19개
 - reports/T07_report.md
-커밋: b7bfc87 (branch cape-validation)
+커밋: dc44de8 (branch cape-validation)

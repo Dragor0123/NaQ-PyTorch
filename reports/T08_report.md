@@ -1,7 +1,7 @@
 [T08 보고] 상태: SUCCESS (A′ 완료, B P1–P4 18 run 전부 완료. G8·U1–U7은 계산값만 적었다)
 소요 시간: 약 43분 (01:16:06 시작 – 01:59 종료; 구현 약 1분 / A′ 25초 / B 39분 / 집계·보고 약 3분)
 수행 내용:
-- 지시서를 수정 없이 먼저 커밋했다 (f168cc7).
+- 지시서를 수정 없이 먼저 커밋했다 (a69c08c).
 - novelty2.py 확장: pu_novelty2(class_weight 없는 LR), compute_estimators3 (PCA256 + pu_feat2 / pu_both2 / pu_struct)
 - 새 파일: cape/diag_novelty3.py, cape/run_T08.sh, cape/summarize_t08.py
 - generators.py 확장
@@ -93,4 +93,4 @@
 - results/T08A_calibration.{md,json}, results/T08A_{ds}.json ×3, results/T08_source_check.json, results/T08_summary.md
 - results/expB/ JSON 18개
 - reports/T08_report.md
-커밋: 75861f1 (branch cape-validation)
+커밋: 878a0f2 (branch cape-validation)

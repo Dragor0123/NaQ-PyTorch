@@ -1,7 +1,7 @@
 [T06 보고] 상태: SUCCESS (P1·P2·P3a 완료, P3b는 시간 규칙에 따라 제외. G6·R1–R8은 계산값만 적었다)
 소요 시간: 약 48분 (15:01:32 시작 – 15:49 종료; 구현·점검·A 약 2분 / B 42.5분 / 집계·보고 약 3분)
 수행 내용:
-- 지시서와 갱신된 CLAUDE.md를 수정 없이 먼저 커밋했다 (ce927df).
+- 지시서와 갱신된 CLAUDE.md를 수정 없이 먼저 커밋했다 (1bac211).
 - 새 파일: cape/labelmask.py, cape/novelty.py, cape/diag_novelty.py, cape/run_T06.sh, cape/summarize_t06.py
 - generators.py 확장
   - make_unl_uni / make_nov / make_scarce_gen 추가. 인자는 top10(풀에서 유도), L_idx, y_L, novelty뿐이다.
@@ -73,4 +73,4 @@
 - results/T06_precheck.json, results/T06A_novelty.{md,json}, results/T06_summary.md, results/T06_dose_response.png
 - results/expB/ JSON 16개: {unl_uni,nov}_r0.5 ×2 ds ×3 seed, naq_unl s2 ×2, elec {unl_uni,nov}_r0.2 s0
 - reports/T06_report.md
-커밋: 36a1e86 (branch cape-validation)
+커밋: 50f79d3 (branch cape-validation)

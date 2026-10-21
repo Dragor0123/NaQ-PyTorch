@@ -1,7 +1,7 @@
 [T03 보고] 상태: SUCCESS (12 run 전부 완료. 게이트·P1–P16 판정은 사람이 결정)
 소요 시간: 약 40분 (구현 12분 / 스모크 1분 / 본 실행 26분 / 집계 1분)
 수행 내용:
-- instructions/T03_preregistration.md를 수정 없이 먼저 커밋했다 (73a8663 "T03: preregistration").
+- instructions/T03_preregistration.md를 수정 없이 먼저 커밋했다 (946b599 "T03: preregistration").
 - cape/generators.py, cape/train_proto.py, cape/run_expB.sh, cape/summarize.py 작성
 - 사용자 추가 지시에 따라 oracle_base를 추가해 arm 6개 × 2 데이터셋 = 12 run 실행.
   - oracle_base는 G2·G3에서 제외하고, 보조 비교로만 적었다.
@@ -70,5 +70,5 @@
 변경·생성 파일:
 - cape/generators.py, cape/train_proto.py, cape/run_expB.sh, cape/summarize.py
 - results/expB/{ds}_{arm}_s0.json ×12, results/expB/purity_vs_acc.png, results/summary.md
-- reports/T03_report.md, instructions/T03_expB_downstream.md (T03_preregistration.md는 73a8663에서 커밋)
-커밋: f300730 (branch cape-validation)
+- reports/T03_report.md, instructions/T03_expB_downstream.md (T03_preregistration.md는 946b599에서 커밋)
+커밋: 3d5b873 (branch cape-validation)
