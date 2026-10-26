@@ -105,3 +105,4 @@ G9 계산값 (판정은 사람이 한다):
 - `results/T09_source_check.json`, `results/T09_summary.md`, `results/T09_summary.json`
 - `results/expB/` JSON 47개 (Clothing 21, Electronics 13, dblp 13)
 - `reports/T09_report.md`
+커밋: d9cc9cf (branch cape-validation), push: 성공
