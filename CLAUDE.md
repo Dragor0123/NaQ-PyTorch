@@ -1,5 +1,7 @@
 # CLAUDE.md — CaPE 검증 실험 (NaQ-PyTorch 기반)
 
+개정 2026-10-26 (T09): §1.1–1.2 현재 단계·확정 사실 갱신, §5 git(push·브랜치), §8 Exp B 대상에 Amazon_clothing 추가, §12 커밋 줄.
+
 이 문서는 이 저장소에서 작업하는 Claude Code Agent의 상위 규약이다.
 작업은 `instructions/T{nn}_{title}.md` 지시서 단위로 진행하며, 지시서와 이 문서가 충돌하면 **지시서가 우선**한다.
 단, §3(레이블 사용 규칙)과 §10(기술 규칙)은 지시서가 명시적으로 예외를 선언하지 않는 한 항상 지킨다.
@@ -31,6 +33,17 @@
 - 현재 질문: **base 레이블만으로 novel 영역을 추정해서 그 이득을 정당하게 회수할 수 있는가.**
 - 이를 위해 주 실험 설정을 **base 레이블 부족 설정**(§6.1)으로 바꾼다.
 
+### 1.2 확정 사실 (T06–T08, r = 0.5, 1-shot LR, NaQ-best 대비; Agent가 전제로 삼아도 된다)
+- 방법 후보는 `mix_alt_r0.5`로 고정한다: 에피소드의 70%는 앵커 ∝ p_novel(`pu_feat`, T07 E*, τ = 1)인 pseudo-episode, 30%는 L의 지도 에피소드.
+  - T07·T08: Electronics +1.67 (2 seed), dblp +2.65 (2 seed).
+- **novel 앵커의 독립 몫(T08 G8-a)**: Electronics `mix_alt − naq_mix` = +1.56 (s0 +1.46, s1 +1.66). dblp는 −0.35.
+- **지도 혼합의 몫**: dblp `naq_mix − NaQ` = +2.99, Electronics +0.11. 지도 단독(`sup_only`)은 Electronics −5.73, dblp +0.72.
+- **보정은 해롭다**: 보정된 p(`nov2c_t1`, E2* = `pu_both2`)는 Electronics에서 `nov2_t1`보다 −1.10(3/3). 보정 경로(E2*, `nov2c_*`)는 T09부터 쓰지 않는다.
+- Electronics의 이득은 pseudo-episode 앵커 중 novel 노드 비율과 함께 오른다: .43 → 0, .67 → +0.52, .88 → +1.62, 1.00(`naq_unl`†) → +2.59. dblp는 상한 자체가 작다(`naq_unl`† +0.44).
+- seed: Electronics·dblp의 mix 계열은 s0–1, `nov2_t1`·NaQ-best는 s0–2. Amazon_clothing은 Exp B 학습이 한 번도 없다(PU 추정기 캐시만 있음, T07 A).
+- 현재 단계(T09): 새 방법 없이 논문 표에 필요한 수치를 확정한다 — seed 5개로 확장(Electronics·dblp), 세 번째 데이터셋(Amazon_clothing) 추가.
+- 다른 브랜치: `token_proto`(TP01–TP02, 종결)는 이 트랙과 무관하다. 읽거나 수정하지 않는다.
+
 ## 2. 작업 방식
 
 1. 사용자는 매 턴 `instructions/T{nn}_*.md` 하나를 지정해 작업을 지시한다.
@@ -45,7 +58,8 @@
 5. 종료 시(성공·부분 성공·실패 모두) 다음 순서로 마무리한다.
    1. `reports/T{nn}_report.md`를 쓴다.
    2. git commit을 한다.
-   3. §12 형식의 메시지로 보고한다.
+   3. `git push origin cape-validation`을 한다(T09부터, §5).
+   4. §12 형식의 메시지로 보고한다.
 
 ## 3. 레이블 사용 규칙 (누수 방지 — 항상 적용)
 
@@ -111,8 +125,11 @@ NaQ-PyTorch/
   - 대상: `arg.py data.py meta.py model.py naq_train.py sup_protonet.py sup_train.py task_generator.py unsup_protonet.py utils.py data/ save/ images/ README.md`
   - NaQ 모듈을 import하지 않는다. NaQ 모듈은 torch_geometric을 import하고 N×N dense 행렬을 만든다. 프로토콜 참고용으로 읽기만 한다.
 - git
-  - 작업 브랜치는 `cape-validation`이다 (T01에서 생성).
-  - 각 지시서 종료 시 `T{nn}: <요약>` 메시지로 커밋한다. push하지 않는다.
+  - 작업 브랜치는 `cape-validation`이다 (T01에서 생성). 원격 `origin`(Dragor0123/NaQ-PyTorch)에 같은 이름으로 있다.
+  - 각 지시서는 시작 시 `T{nn}: instruction and preregistration` 커밋, 종료 시 `T{nn}: <요약>` 커밋을 만든다.
+  - **T09부터 지시서 종료 커밋 뒤 `git push origin cape-validation`을 한다.** push가 실패하면 보고서 "문제·미해결"에 적고 계속한다. force push 금지.
+  - `main`과 `token_proto` 브랜치에는 커밋하지 않는다. 다른 브랜치로 전환하지 않는다(지시서가 요구할 때만).
+  - `data/`, `dataset/`, `cache/`, `logs/`는 커밋하지 않는다(.gitignore).
 
 ## 6. 데이터와 프로토콜 (사전 확인된 사실)
 
@@ -236,7 +253,8 @@ NaQ-PyTorch/
 
 ### Exp B — 하위 성능 확인
 
-- 대상 데이터셋: `Amazon_eletronics`, `dblp` (NaQ-Feat이 이기는 곳 / NaQ-Diff가 이기는 곳)
+- 대상 데이터셋: `Amazon_eletronics`, `dblp` (NaQ-Feat이 이기는 곳 / NaQ-Diff가 이기는 곳). **T09부터 `Amazon_clothing` 추가**(NaQ-best = `naq_feat`, `generators.NAQ_BEST_COL` 그대로).
+- T04 이후 실행 설정: 학습 에피소드 4,000개, valid 평가 250 에피소드마다(`--episodes 4000 --eval_every 250`). T09도 같다.
 - 에피소드 공통: 5-way, 1-shot support, way당 query 10개, 레이블은 `y_spt = arange(5)`, `y_qry = repeat(arange(5), 10)`
 
 **arm 5개**
@@ -367,5 +385,5 @@ NaQ-PyTorch/
 - (없으면 "없음")
 변경·생성 파일:
 - ...
-커밋: <short hash> (branch cape-validation)
+커밋: <short hash> (branch cape-validation), push: 성공 | 실패(사유)
 ```
